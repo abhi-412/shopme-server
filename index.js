@@ -26,7 +26,13 @@ const PORT = process.env.PORT || 4000;
 
 dbConnect();
 
-app.use(cors());
+const corsOptions = {
+    origin:["https://shopme-admin-delta.vercel.app/","http://localhost:5173"],
+    credentials:true,
+    optionSuccessStatus:200,
+  } 
+  
+  app.use(cors(corsOptions));
 
 app.use(morgan("dev"))
  
@@ -34,6 +40,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
 
 app.use(cookieParser());
+
+app.get("/", (req, res) => { res.send("Welcome to the Server"); })
 
 app.use('/api/user', userRoutes)
 
