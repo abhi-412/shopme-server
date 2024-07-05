@@ -92,6 +92,7 @@ const adminLogin = asyncHandler(
 const getAllUsers = asyncHandler(async(req,res)=>{
     try{
         const getUsers = await User.find()
+        console.log(User.find());
         res.json(getUsers)
     }catch(error){
         throw new Error(error);
