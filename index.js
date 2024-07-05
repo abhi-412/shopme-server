@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 4000;
 dbConnect();
 
 const corsOptions = {
-    origin:["https://shopme-admin-delta.vercel.app/","http://localhost:5173"],
+    origin:["https://shopme-admin-delta.vercel.app","http://localhost:5173"],
     credentials:true,
     optionSuccessStatus:200,
   } 
