@@ -66,8 +66,6 @@ const getAllProducts = asyncHandler(async(req,res)=>{
         const queryObj = { ...req.query };
         const excludeFields = ['page','sort','limit','fields'];
         excludeFields.forEach((el) => delete queryObj[el]);
-        console.log(queryObj);
-        // const findProducts = await Product.find(req.query);
         let queryStr = JSON.stringify(queryObj);
 
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g,(match)=>`$${match}`)
@@ -104,7 +102,6 @@ const getAllProducts = asyncHandler(async(req,res)=>{
             const productCount = await Product.countDocuments();
             if(skip>=productCount) throw new Error("This page does not Exixt")
         }
-        console.log(page,limit,skip);
 
 
         const product = await query
@@ -128,12 +125,18 @@ const addToWishlist = asyncHandler(async(req,res)=>{
             },{
                 new:true,
             })
-            res.json(updatedUser)
+            res.json({
+                _id:updatedUser?._id,
+                wishlist:updatedUser?.wishlist
+            })
         }else{
             const updatedUser = await User.findByIdAndUpdate(_id,{
                 $push:{wishlist:productId}
             },{new:true})
-            res.json(updatedUser)
+            res.json({
+                _id:updatedUser?._id,
+                wishlist:updatedUser?.wishlist
+            })
         }
 
     }catch(error){

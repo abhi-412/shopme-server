@@ -42,7 +42,7 @@ const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
  router.get('/orders/:id',authMiddleware,getOrderByUserId)
  router.get('/orders',authMiddleware,isAdmin,getOrders)
 
- router.get('/:id',authMiddleware,isAdmin,getOneUser)
+ router.get('/:id',authMiddleware,getOneUser)
  router.delete('/empty-cart',authMiddleware,emptyCart)
 
  router.delete('/:id',deleteUser)

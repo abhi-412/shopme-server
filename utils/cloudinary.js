@@ -23,22 +23,32 @@ const checkResourceExists = async (publicId) => {
     }
   };
 
-
-const cloudinaryUploadImg = async(fileToUpload)=>{
-    return new Promise((resolve)=>{
-        cloudinary.uploader.upload(fileToUpload,(result)=>{
-                resolve({
-                    url:result.secure_url,
-                    asset_id:result.asset_id,
-                    public_id:result.public_id,
-                },
-                {
-                    resource_type:"auto",
-                }
-            );
-        });
+  function cloudinaryUploadImg(req, res, fn) {
+    return new Promise((resolve, reject) => {
+      (req, res, (result) => {
+        if (result instanceof Error) {
+          return reject(result);
+        }
+        return resolve(result);
+      });
     });
-};
+  }
+
+// const cloudinaryUploadImg = async(fileToUpload)=>{
+//     return new Promise((resolve)=>{
+//         cloudinary.uploader.upload(fileToUpload,(result)=>{
+//                 resolve({
+//                     url:result.secure_url,
+//                     asset_id:result.asset_id,
+//                     public_id:result.public_id,
+//                 },
+//                 {
+//                     resource_type:"auto",
+//                 }
+//             );
+//         });
+//     });
+// };
 
 const cloudinaryDeleteImg = async(fileToDelete)=>{
     return new Promise((resolve)=>{

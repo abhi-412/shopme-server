@@ -37,18 +37,22 @@ const userLoginController = asyncHandler(
             const refreshToken = await generateRefreshToken(findUser?.id);
             const updatedUser = await User.findByIdAndUpdate(findUser.id,{
                 refreshToken:refreshToken
-            },{new:true});
+            },{new:true}) ;
             res.cookie('refresh',refreshToken,{
                 httpOnly:true,
                 maxAge:72*60*60*1000
             })
             res.json({
-                _id: findUser?.id,
-                firstName: findUser?.firstName,
-                lastName:findUser?.lastName,
-                email:findUser?.email,
-                mobile:findUser?.mobile,
-                token:generateToken(findUser?.id)
+                _id: updatedUser?.id,
+                firstName: updatedUser?.firstName,
+                lastName:updatedUser?.lastName,
+                email:updatedUser?.email,
+                mobile:updatedUser?.mobile,
+                token:generateToken(updatedUser?.id),
+                wishlist:updatedUser?.wishlist,
+                cart:updatedUser?.cart,
+                orders:updatedUser?.orders
+
             })
         }else{
             throw new Error("Invalid Credentials")
@@ -311,8 +315,7 @@ const getWishList = asyncHandler(async(req,res)=>{
     // const {prodId} = req.body;
     try{
         const findUser = await User.findById(_id).populate('wishlist');
-        res.json(findUser)
-
+        res.json(findUser.wishlist)
     }catch(error){
         throw new Error(error)
     }
