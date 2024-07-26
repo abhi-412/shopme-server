@@ -322,59 +322,86 @@ const getWishList = asyncHandler(async(req,res)=>{
 })
 
 
-const userCart = asyncHandler(async(req,res)=>{
-   const {cart} = req.body;
-   const {_id} = req.user;
-   validateMongodbId(_id)
-   try{
-        let products = []
+const userCart = asyncHandler(async (req, res) => {
+    const { cart } = req.body;
+    const { _id } = req.user;
+    validateMongodbId(_id);
+
+    try {
         const user = await User.findById(_id);
-        const alreadyInCart = await Cart.findOne({orderBy:user._id})
-        if(alreadyInCart){
-            alreadyInCart.remove()
-        }else{
-            for(let i=0;i<cart.length;i++){
+        let existingCart = await Cart.findOne({ orderBy: user._id });
+        let products = [];
+
+        if (existingCart) {
+            // Filter out products that are in the new cart
+            const productIds = cart.map(p => p._id);
+            const existingProductIds = existingCart.products.map(p => p.product.toString());
+
+            existingCart.products = existingCart.products.filter(
+                (product) => !productIds.includes(product.product.toString())
+            );
+
+            // Add new products to the cart
+            for (let i = 0; i < cart.length; i++) {
+                if(!existingProductIds.includes(cart[i]._id.toString())){
+                    let Obj = {};
+                    Obj.product = cart[i]._id;
+                    Obj.count = cart[i].count;
+                    Obj.color = cart[i].color;
+                    Obj.size = cart[i].size;
+                    let getPrice = await Product.findById(cart[i]._id).select("price").exec();
+                    Obj.price = getPrice ? getPrice.price : 0;
+                    products.push(Obj);
+                }
+            }
+
+            existingCart.products.push(...products);
+        } else {
+            existingCart = new Cart({ orderBy: user._id, products: [] });
+
+            for (let i = 0; i < cart.length; i++) {
                 let Obj = {};
                 Obj.product = cart[i]._id;
-                Obj.count=cart[i].count;
-                Obj.color=cart[i].color;
+                Obj.count = cart[i].count;
+                Obj.color = cart[i].color;
+                Obj.size = cart[i].size;
                 let getPrice = await Product.findById(cart[i]._id).select("price").exec();
-                Obj.price = getPrice.price;
-                products.push(Obj)
+                Obj.price = getPrice ? getPrice.price : 0;
+                products.push(Obj);
             }
-            let cartTotal = 0;
-            for(let i=0;i<products.length;i++){
-                let object = products[i];
-                const count = object.count;
-                const price = object.price;
-                cartTotal += count*price
-            }
-            console.log(products,cartTotal);
-            let newCart = await new Cart({
-                products,
-                cartTotal,
-                orderBy:user?._id,
-            }).save();
-            res.json(newCart)
+
+            existingCart.products.push(...products);
         }
 
-   }catch(error){
-        throw new Error(error)
-   }
+        // Calculate the total price of the cart
+        let cartTotal = existingCart.products.reduce((total, item) => total + item.count * item.price, 0);
+        existingCart.cartTotal = cartTotal;
 
-})
+        await existingCart.save();
 
-const getUserCart = asyncHandler(async(req,res)=>{
-    const {_id} = req.user;
-    validateMongodbId(_id)
-    try{
-        const userCart = await Cart.findOne({orderBy:_id})
-        .populate("products.product");
+        res.json(existingCart);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+
+
+const getUserCart = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    validateMongodbId(_id);
+    try {
+        const userCart = await Cart.findOne({ orderBy: _id }).populate("products.product");
+        // console.log(userCart);
+        if (!userCart) {
+            throw new Error("User cart not found!");
+        }
         res.json(userCart);
-    }catch(error){
+    } catch (error) {
         throw new Error(error);
     }
-})
+});
 
 const emptyCart = asyncHandler(async(req,res)=>{
     const {_id} = req.user;

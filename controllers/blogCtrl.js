@@ -41,14 +41,19 @@ const getBlog = asyncHandler(async(req,res)=>{
         if(req.body.title){
             req.body.slug = slugify(req.body.title)
         }
-        const blog = await Blog.findById(id).populate('likes').populate('dislikes');
+        const blog = await Blog.findById(id).populate({
+            path: 'likes',
+            select: '_id firstName lastName'
+        }).populate({
+            path: 'dislikes',
+            select: '_id firstName lastName'
+        });
         await Blog.findByIdAndUpdate(id,{
             $inc:{numViews:1}
         },{
             new:true,
         })
         res.json({blog})
-
     }catch(error){
         throw new Error(error)
     }
@@ -88,16 +93,20 @@ const deleteBlog = asyncHandler(async(req,res)=>{
 
 const likeBlog = asyncHandler(async(req,res)=>{
     const {blogId} = req.body;
+    console.log(blogId);
     validateMongodbId(blogId)
+
     
     const blog = await Blog.findById(blogId)
     const loginUserId = req?.user?._id;
     const isLiked=blog?.isLiked;
     const disliked = blog?.isDisliked;
+    const numViews = blog?.numViews;
     if(disliked){ 
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $pull:{dislikes:loginUserId},
             isDisliked:false,
+            numViews:numViews-1,
             $push:{likes:loginUserId},
             isLiked:true,
         },{new:true});
@@ -106,12 +115,14 @@ const likeBlog = asyncHandler(async(req,res)=>{
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $pull:{likes:loginUserId},
             isLiked:false,
+            numViews:numViews-1,
         },{new:true})
         res.json(blog)
     }else{
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $push:{likes:loginUserId},
             isLiked:true,
+            numViews:numViews-1,
         },{new:true})
         res.json(blog)
     }
@@ -126,12 +137,14 @@ const dislikeBlog=asyncHandler(async(req,res)=>{
     const loginUserId = req?.user?._id;
     const liked=blog?.isLiked;
     const disliked = blog?.isDisliked;
+    const numViews = blog?.numViews;
     
     if(liked){ 
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $pull:{likes:loginUserId},
             isLiked:false,
             isDisliked:true,
+            numViews:numViews-1,
             $push:{dislikes:loginUserId},
         },{new:true});
         res.json(blog)
@@ -140,12 +153,14 @@ const dislikeBlog=asyncHandler(async(req,res)=>{
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $pull:{dislikes:loginUserId},
             isDisliked:false,
+            numViews:numViews-1,
         },{new:true})
         res.json(blog)
     }else{
         const blog = await Blog.findByIdAndUpdate(blogId,{
             $push:{dislikes:loginUserId},
             isDisliked:true,
+            numViews:numViews-1,
         },{new:true})
         res.json(blog)
     }
