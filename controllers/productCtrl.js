@@ -64,7 +64,7 @@ const getAllProducts = asyncHandler(async(req,res)=>{
     
     try{
         const queryObj = { ...req.query };
-        const excludeFields = ['page','sort','limit','fields'];
+        const excludeFields = ['page','sort','limit','fields','order'];
         excludeFields.forEach((el) => delete queryObj[el]);
         let queryStr = JSON.stringify(queryObj);
 
@@ -77,7 +77,8 @@ const getAllProducts = asyncHandler(async(req,res)=>{
 
         if (req.query.sort){
             const sortBy = req.query.sort.split(',').join(' ')
-            query = query.sort(sortBy)
+            const sortOrder = req.query.order === 'asc' ? 1 : -1;
+            query = query.sort({ [sortBy]: sortOrder })
         }else{
             query = query.sort('-createdAt')
         }
