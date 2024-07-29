@@ -77,7 +77,7 @@ const getAllProducts = asyncHandler(async(req,res)=>{
 
         if (req.query.sort){
             const sortBy = req.query.sort.split(',').join(' ')
-            const sortOrder = req.query.order === 'asc' ? 1 : -1;
+            const sortOrder = req.query.order === 'desc' ? -1 : 1;
             query = query.sort({ [sortBy]: sortOrder })
         }else{
             query = query.sort('-createdAt')
@@ -95,18 +95,24 @@ const getAllProducts = asyncHandler(async(req,res)=>{
 
         //pagination
 
-        const page = req.query.page;
-        const limit = req.query.limit;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
         const skip = (page-1)*limit
         query = query.skip(skip).limit(limit)
+        const totalProducts = await Product.countDocuments(JSON.parse(queryStr));
         if(req.query.page){
             const productCount = await Product.countDocuments();
             if(skip>=productCount) throw new Error("This page does not Exixt")
         }
 
+        const totalPages = Math.ceil(totalProducts / limit);
 
-        const product = await query
-        res.json(product)
+        const product = await query;
+        res.json({
+            products:product,
+            totalPages,
+            totalProducts
+        })
     }catch(error){
         throw new Error(error)
     }
