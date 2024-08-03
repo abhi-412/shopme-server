@@ -18,7 +18,8 @@ const {createUser,userLoginController,
        getOrders,
        getOrder,
        updateOrderStatus,
-       getOrderByUserId} = require('../controllers/userController.js')
+       getOrderByUserId,
+       getUserAdress} = require('../controllers/userController.js')
 const router = express.Router();
 
 const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
@@ -41,6 +42,7 @@ const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
  router.get('/order',authMiddleware,getOrder)
  router.get('/orders/:id',authMiddleware,getOrderByUserId)
  router.get('/orders',authMiddleware,isAdmin,getOrders)
+ router.get('/address',authMiddleware,getUserAdress)
 
  router.get('/:id',authMiddleware,getOneUser)
  router.delete('/empty-cart',authMiddleware,emptyCart)

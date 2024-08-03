@@ -57,7 +57,7 @@ const deleteProduct = asyncHandler(async(req,res)=>{
         throw new Error(error)
     }
 })
-
+ 
 
 
 const getAllProducts = asyncHandler(async(req,res)=>{
@@ -122,7 +122,7 @@ const addToWishlist = asyncHandler(async(req,res)=>{
     const {_id} = req.user;
     const {productId} = req.body;
     try{
-        const product = await Product.findById(productId)
+        const product = await Product.findById(productId);
         const user = await User.findById(_id);
         const prevAdded = user?.wishlist.find((id)=>id.toString()===productId)
         

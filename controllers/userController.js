@@ -15,6 +15,7 @@ const Order = require('../models/orderModel.js')
 const Product = require('../models/ProductModel.js');
 const Cart = require('../models/cartModel.js');
 const Coupon = require('../models/CouponModel.js');
+const Address = require('../models/AddressModel.js');
 
 
 const createUser = asyncHandler( async(req,res)=>{
@@ -112,7 +113,6 @@ const getOneUser = asyncHandler(async(req,res)=>{
     }catch(error){
         throw new Error(error)
     }
-    
 })
 
 const deleteUser = asyncHandler(async(req,res)=>{
@@ -129,24 +129,77 @@ const deleteUser = asyncHandler(async(req,res)=>{
 
 //address///
 
-const saveAddress = asyncHandler(async(req,res)=>{
-    const {_id} = req.user;
-    validateMongodbId(_id)
-    try{
-        const updatedUser = await User.findByIdAndUpdate(
-            _id,{
-            address: req?.body?.address,
-        },
-        {
-            new:true,
-        })
-        res.json(updatedUser)
-    }catch(error){
-        throw new Error(error)
-    }
-    
-})
+const saveAddress = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    const { address } = req.body;
 
+    // Validate user ID
+    validateMongodbId(_id);
+
+    try {
+        const { name, addressLine1, addressLine2, city, state, pincode, country } = address;
+        
+        // Check for required fields
+        if (!name || !addressLine1 || !city || !state || !pincode || !country) {
+            return res.status(400).json({ message: 'All address fields are required' });
+        }
+
+        // Check if the address type is 'Home' or 'Work' and update if it exists
+        if (name === 'Home' || name === 'Work') {
+            // Find and update the existing address of this type for the user
+            const updatedAddress = await Address.findOneAndUpdate(
+                { user: _id, name },
+                { addressLine1, addressLine2, city, state, pincode, country },
+                { new: true, upsert: true } // Create the address if it doesn't exist
+            );
+
+            // Update the user's address list
+            await User.findByIdAndUpdate(
+                _id,
+                { $addToSet: { address: updatedAddress._id } } // Add the updated address ID to user's address array
+            );
+
+            return res.json(updatedAddress);
+        } else {
+            // Create a new address for other types
+            const newAddress = await Address.create({
+                user: _id,
+                name,
+                addressLine1,
+                addressLine2,
+                city,
+                state,
+                pincode,
+                country
+            });
+
+            // Update the user's address list
+            await User.findByIdAndUpdate(
+                _id,
+                { $addToSet: { address: newAddress._id } } // Add the new address ID to user's address array
+            );
+
+            return res.json(newAddress);
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+});
+
+const getUserAdress = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    console.log(_id);
+    validateMongodbId(_id);
+    try {
+        const userAdress = await User.findById(_id).populate("address");
+        if (!userAdress) {
+            throw new Error("User address not found!");
+        }
+        res.json(userAdress.address);
+    } catch (error) {
+        throw new Error(error);
+    }
+})
 
 
 const handleRefreshToken = asyncHandler(async(req,res)=>{
@@ -545,4 +598,4 @@ module.exports = {createUser,userLoginController,applyCoupon,
     getAllUsers,getOneUser,deleteUser,updateUser,createOrder,
     blockUser,unblockUser,handleRefreshToken,logout,getOrders,
     forgetPasswordToken,userCart,getUserCart,emptyCart,updateOrderStatus,
-updatePassword,resetPassword,adminLogin,getWishList,saveAddress,getOrder,getOrderByUserId};  
+updatePassword,resetPassword,adminLogin,getWishList,saveAddress,getOrder,getOrderByUserId,getUserAdress};  
