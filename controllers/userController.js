@@ -493,47 +493,43 @@ const applyCoupon = asyncHandler(async(req,res)=>{
 
 
 const createOrder=asyncHandler(async(req,res)=>{
-    const {COD,couponApplied} = req.body;
+    const {paymentMethod,items,shippingInfo,orderInfo,totalPrice,totalAfterDiscount,paymentInfo} = req.body;
+    console.log(req.body);
     const  {_id} = req.user;
     validateMongodbId(_id); 
     try{
-        if(!COD) throw new Error("Create cash order failed")
-        const user = await User.findById(_id);
-        let userCart = await Cart.findOne({orderBy:user._id});
-        let finalAmount = 0;
-
-        if(couponApplied && userCart.totalAfterDiscount){
-            finalAmount = userCart.totalAfterDiscount
+        // if(!COD) throw new Error("Create cash order failed")
+        if(paymentMethod==="Cash on Delivery"){
+            let newCODOrder = await new Order({
+                items,
+                paymentInfo:{
+                    razorpayOrderID:uniqid(),
+                    razorpayPaymentID:uniqid(),
+                },
+                shippingInfo,
+                orderInfo,
+                totalPrice,
+                totalAfterDiscount,
+                paymentMethod,
+                orderBy:_id,
+                orderStatus:"Proccessing",
+            }).save();
+            res.json({newCODOrder,status:"Order Placed Successfully"});
         }else{
-            finalAmount = userCart.cartTotal
+            let newRazorpayOrder = await new Order({
+                items,
+                paymentInfo,
+                shippingInfo,
+                orderInfo,
+                totalPrice,
+                totalAfterDiscount,
+                paymentMethod,
+                orderBy:_id,
+                orderStatus:"Proccessing",
+            }).save();
+                
+            res.json({newRazorpayOrder,status:"Order Placed Successfully"});
         }
-
-        let newOrder = await new Order({
-            products:userCart.products,
-            paymentIntent:{
-                id:uniqid(),
-                method:"COD",
-                amount:finalAmount,
-                status:"Cash on Delivery",
-                created:Date.now(),
-                currency:"usd"
-            },
-            orderBy:user._id,
-            orderStatus:"Cash on Delivery",
-        }).save();
-
-        let update = userCart.products.map((item)=>{
-            return{
-                updateOne:{
-                    filter: {_id:item.product._id},
-                    update:{$inc:{quantity:-item.count,sold:+item.count}}
-                }
-            }
-        })
-        const updated = await Product.bulkWrite(update,{});
-        res.json({
-            message:"success"
-        })
 
     }catch(error){
         throw new Error(error)
@@ -556,9 +552,9 @@ const getOrderByUserId = asyncHandler(async(req,res)=>{
     const {id} = req.params;
     validateMongodbId(id)
     try{
-        let order = await Order.findOne({orderBy:id}).populate("products.product").populate("orderBy").exec();
+        let order = await Order.find({orderBy:id}).populate("items.product").populate("items.color").populate("shippingInfo.address").populate("orderBy").exec();
         // console.log(order.products);
-        res.json(order.products)
+        res.json(order)
     }catch(error){
         throw new Error(error)
     }

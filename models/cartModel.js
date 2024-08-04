@@ -10,9 +10,18 @@ const cartSchema = new mongoose.Schema({
                 ref:"Product",
                 required:true,
             },
-            color:String,
-            count:Number,
-            price:Number,
+            color:{
+                type:String,
+                required:true
+            },
+            count:{
+                type:Number,
+                required:true
+            },
+            price:{
+                type:Number,
+                required:true
+            },
             size:String,
         },
     ],

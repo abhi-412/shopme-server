@@ -3,18 +3,54 @@ const mongoose = require('mongoose'); // Erase if already required
 // Declare the Schema of the Mongo model
 var orderSchema = new mongoose.Schema({
     
-    products:[
+    items:[
         {
             product:{
                 type: mongoose.Schema.Types.ObjectId,
                 ref:"Product",
+                required:true,
             },
-            color:String,
-            count:Number,
+            color:{
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Color",
+                required:true,
+            },
+            count:{
+                type:Number,
+                required:true
+            },
+            price:{
+                type:Number,
+                required:true
+            },
+            size:String,
         },
     ],
-    COD:Boolean,
-    paymentIntent:{},
+
+    shippingInfo:{
+        address:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Address",
+        },
+        customerName:String,
+        phoneNumber:String,
+    },
+    paymentMethod:{
+        type:String,
+        enum:["Cash on Delivery","Card","UPI"],
+        default:"Cash on Delivery"
+    },
+    paymentInfo:{
+        razorpayOrderID:{
+            type:String,
+            required:true
+        },
+        razorpayPaymentID:{
+            type:String,
+            required:true
+        },
+        // razorpaySignature:String
+    },
     orderStatus:{
         type:String,
         default:"Not Processed",
@@ -24,8 +60,21 @@ var orderSchema = new mongoose.Schema({
     orderBy:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"User",
-    }
+    },
+    paidOn:{
+        type:Date,
+        default:Date.now()
+    },
+    totalPrice:{
+        type:Number,
+        required:true
+    },
+    totalAfterDiscount:{
+        type:Number,
+        required:true
+    },
 },
+
 {
     timestamps:true,
 },

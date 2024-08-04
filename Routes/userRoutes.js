@@ -22,7 +22,8 @@ const {createUser,userLoginController,
        getUserAdress} = require('../controllers/userController.js')
 const router = express.Router();
 
-const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
+const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js');
+const { checkout, paymentVerification } = require("../controllers/paymentCtrl.js");
 
  router.post('/register',createUser)
  router.put('/password/',authMiddleware,updatePassword)
@@ -32,7 +33,9 @@ const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
  router.post('/forgot-password-token',authMiddleware,forgetPasswordToken)
  router.post('/cart',authMiddleware,userCart)
  router.post('/cart/apply-coupon',authMiddleware,applyCoupon)
- router.post('/cart/cash-order',authMiddleware,createOrder)
+ router.post('/create-order',authMiddleware,createOrder)
+ router.post('/order/payment',authMiddleware,checkout)
+ router.post('/order/payment-verify',authMiddleware,paymentVerification)
  router.put('/reset-password/:token',resetPassword)
  router.get('/all-users',getAllUsers)
  router.get('/refresh', handleRefreshToken)
@@ -40,8 +43,9 @@ const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js')
  router.get('/wishlist',authMiddleware,getWishList)
  router.get('/get-cart',authMiddleware,getUserCart)
  router.get('/order',authMiddleware,getOrder)
+ 
  router.get('/orders/:id',authMiddleware,getOrderByUserId)
- router.get('/orders',authMiddleware,isAdmin,getOrders)
+ router.get('/orders',authMiddleware,getOrders)
  router.get('/address',authMiddleware,getUserAdress)
 
  router.get('/:id',authMiddleware,getOneUser)
