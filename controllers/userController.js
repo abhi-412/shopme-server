@@ -312,7 +312,7 @@ const forgetPasswordToken=asyncHandler(async(req,res)=>{
             const resetToken = await user.createPasswordResetToken();
             await user.save();
             res.json(resetToken)
-            const resetURL = `Hi, Please follow this link to reset your password. This link is walid for 10 minutes <a href="http://localhost:5000/api/user/reset-password/${resetToken}" =>Click here</a>`
+            const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes <a href="https://shopme-server-eight.vercel.app/reset-password/${resetToken}" =>Click here</a>`
             const data={
                 to:email,
                 text:"Hey User",
@@ -541,7 +541,7 @@ const getOrder = asyncHandler(async(req,res)=>{
     const {_id} = req.user;
     validateMongodbId(_id)
     try{
-        let orders = await Order.find({orderBy:_id}).populate("products.product").populate("orderBy").exec()
+        let orders = await Order.find({orderBy:_id}).populate("items.product").populate("orderBy").exec()
         res.json(orders)
     }catch(error){
         throw new Error(error)
@@ -553,7 +553,6 @@ const getOrderByUserId = asyncHandler(async(req,res)=>{
     validateMongodbId(id)
     try{
         let order = await Order.find({orderBy:id}).populate("items.product").populate("items.color").populate("shippingInfo.address").populate("orderBy").exec();
-        // console.log(order.products);
         res.json(order)
     }catch(error){
         throw new Error(error)
@@ -562,7 +561,7 @@ const getOrderByUserId = asyncHandler(async(req,res)=>{
 
 const getOrders = asyncHandler(async(req,res)=>{
     try{
-        let orders = await Order.find().populate("products.product").populate("orderBy").exec()
+        let orders = await Order.find().populate("items.product").populate("orderBy").exec()
         res.json(orders)
     }catch(error){
         throw new Error(error)
@@ -573,13 +572,11 @@ const getOrders = asyncHandler(async(req,res)=>{
 const updateOrderStatus = asyncHandler(async(req,res)=>{
     const {status} = req.body;
     const {id} = req.params;
+
     validateMongodbId(id);
    try{
         const updateStatus = await Order.findByIdAndUpdate(id,{
             orderStatus:status,
-            paymentIntent:{
-                status:status
-            }
         },{
             new:true,
         })

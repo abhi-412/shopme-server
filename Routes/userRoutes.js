@@ -27,10 +27,10 @@ const { checkout, paymentVerification } = require("../controllers/paymentCtrl.js
 
  router.post('/register',createUser)
  router.put('/password/',authMiddleware,updatePassword)
- router.put('/order/update-order/:id',authMiddleware,isAdmin,updateOrderStatus)
+ router.put('/order/update/:id',authMiddleware,isAdmin,updateOrderStatus)
  router.post('/login', userLoginController)
  router.post('/admin-login', adminLogin)
- router.post('/forgot-password-token',authMiddleware,forgetPasswordToken)
+ router.post('/forgot-password-token',forgetPasswordToken)
  router.post('/cart',authMiddleware,userCart)
  router.post('/cart/apply-coupon',authMiddleware,applyCoupon)
  router.post('/create-order',authMiddleware,createOrder)
