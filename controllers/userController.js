@@ -201,6 +201,30 @@ const getUserAdress = asyncHandler(async (req, res) => {
     }
 })
 
+const removeAddress = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    const { addressId } = req.params;
+    
+    validateMongodbId(_id);
+    validateMongodbId(addressId.toString());
+    try {
+        const user = await User.findById(_id);
+        if (!user) {
+            throw new Error("User not found!");
+        }
+        const updatedUser = await User.findByIdAndUpdate(
+            _id,
+            {
+                $pull: { address: addressId },
+            },
+            { new: true }
+        );
+        res.json("Address removed successfully");
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
 
 const handleRefreshToken = asyncHandler(async(req,res)=>{
     const cookie = req.cookies;
@@ -312,7 +336,7 @@ const forgetPasswordToken=asyncHandler(async(req,res)=>{
             const resetToken = await user.createPasswordResetToken();
             await user.save();
             res.json(resetToken)
-            const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes <a href="https://shopme-server-eight.vercel.app/reset-password/${resetToken}" =>Click here</a>`
+            const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes <a href="${process.env.BASE_URL}reset-password/${resetToken}" =>Click here</a>`
             const data={
                 to:email,
                 text:"Hey User",
@@ -591,4 +615,4 @@ module.exports = {createUser,userLoginController,applyCoupon,
     getAllUsers,getOneUser,deleteUser,updateUser,createOrder,
     blockUser,unblockUser,handleRefreshToken,logout,getOrders,
     forgetPasswordToken,userCart,getUserCart,emptyCart,updateOrderStatus,
-updatePassword,resetPassword,adminLogin,getWishList,saveAddress,getOrder,getOrderByUserId,getUserAdress};  
+updatePassword,resetPassword,adminLogin,getWishList,saveAddress,getOrder,getOrderByUserId,removeAddress,getUserAdress};  

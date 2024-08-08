@@ -19,7 +19,8 @@ const {createUser,userLoginController,
        getOrder,
        updateOrderStatus,
        getOrderByUserId,
-       getUserAdress} = require('../controllers/userController.js')
+       getUserAdress,
+       removeAddress} = require('../controllers/userController.js')
 const router = express.Router();
 
 const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware.js');
@@ -52,6 +53,7 @@ const { checkout, paymentVerification } = require("../controllers/paymentCtrl.js
  router.delete('/empty-cart',authMiddleware,emptyCart)
 
  router.delete('/:id',deleteUser)
+ router.delete('/address/:addressId',authMiddleware,removeAddress);
  router.put('/save-address',authMiddleware,saveAddress)
  router.put('/edit-user',authMiddleware, updateUser);
  router.put('/block-user/:id', authMiddleware,isAdmin,blockUser)
