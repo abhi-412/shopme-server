@@ -4,8 +4,8 @@ const { createEnquiry, updateEnquiry, deleteEnquiry, getEnquiry, getEnquiries } 
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 
 
-router.get('/',getEnquiries),
-router.post('/',authMiddleware,isAdmin,createEnquiry);
+router.get('/',authMiddleware,isAdmin,getEnquiries),
+router.post('/',authMiddleware,createEnquiry);
 router.get('/:id',authMiddleware,getEnquiry)
 router.put('/:id',authMiddleware,updateEnquiry)
 router.delete('/:id',authMiddleware,isAdmin,deleteEnquiry)
