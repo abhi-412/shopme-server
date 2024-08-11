@@ -4,7 +4,7 @@ const { createCoupon, getCoupons, getACoupon, updateCoupon, deleteACoupon } = re
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 
 router.post('/',authMiddleware,isAdmin,createCoupon)
-router.get('/',authMiddleware,isAdmin,getCoupons)
+router.get('/',authMiddleware,getCoupons)
 router.get('/:id',authMiddleware,getACoupon)
 router.put('/:id',authMiddleware,isAdmin, updateCoupon)
 router.delete('/:id',authMiddleware,isAdmin, deleteACoupon)

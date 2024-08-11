@@ -5,14 +5,16 @@ const instance = new razorpay({
     key_secret: process.env.RAZORPAY_SECRET,
   });
 
+  
 const checkout = async (req, res) => {
     try {
         const {amount} = req.body; 
         const options = {
-            amount:amount.toFixed(2) * 100, // amount in the smallest currency unit
+            amount:amount.toFixed(0) * 100, // amount in the smallest currency unit
             currency: "INR",
             // receipt: "order_rcptid_11",
         };
+        
         const order = await instance.orders.create(options);
             // if (error) {
             //     console.log(error);
@@ -22,7 +24,6 @@ const checkout = async (req, res) => {
             res.json({order});
     
     } catch (error) {
-        console.log(error);
         return res.status(500).send({ message: "Something went wrong" });
     }
 };
